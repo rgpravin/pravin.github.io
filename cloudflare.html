@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>5XX Level Errors page</title>
+    <script>
+      // JavaScript code to display only 500 series error codes
+      document.addEventListener("DOMContentLoaded", function() {
+        var errorDetails = "::CLOUDFLARE_ERROR_500S_BOX::"; // Replace with actual error details or fetch from server-side
+        // Extract the error code from the error details
+        var errorCode = extractErrorCode(errorDetails);
+        // Display only if it's a 500 series error code
+        if (is500SeriesError(errorCode)) {
+          document.getElementById("error-code").textContent = errorCode;
+        }
+      });
+      // Function to extract the error code from the error details
+      function extractErrorCode(errorDetails) {
+        // Implement your logic to extract the error code from the error details
+        // For example:
+        // var errorCode = errorDetails.substring(0, 3);
+        // return errorCode;
+        // Replace the above implementation with your actual logic to extract the error code
+        // based on the format of the error details you receive.
+      }
+      // Function to check if the error code is a 500 series error
+      function is500SeriesError(errorCode) {
+        return errorCode.startsWith("500");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>5XX Level Errors</h1>
+    <h2 id="error-code">Loading...</h2>
+  </body>
+</html>
