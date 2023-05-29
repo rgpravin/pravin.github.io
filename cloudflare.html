@@ -16,12 +16,8 @@
       });
       // Function to extract the error code from the error details
       function extractErrorCode(errorDetails) {
-        // Implement your logic to extract the error code from the error details
-        // For example:
-        // var errorCode = errorDetails.substring(0, 3);
-        // return errorCode;
-        // Replace the above implementation with your actual logic to extract the error code
-        // based on the format of the error details you receive.
+        var errorCode = errorDetails.substring(2, 5); // Assuming the error code is a three-digit code
+        return errorCode;
       }
       // Function to check if the error code is a 500 series error
       function is500SeriesError(errorCode) {
