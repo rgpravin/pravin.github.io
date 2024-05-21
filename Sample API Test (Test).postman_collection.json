@@ -1,0 +1,237 @@
+{
+	"info": {
+		"_postman_id": "001fe4a2-7311-4d6f-af2d-fd51493e86b0",
+		"name": "Sample API Test (Test)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25104168"
+	},
+	"item": [
+		{
+			"name": "JWT",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"//Base64 URL encoding\r",
+							"function base64url(source) {\r",
+							"  // Encode in classical base64\r",
+							"  encodedSource = CryptoJS.enc.Base64.stringify(source);\r",
+							"  // Remove padding equal characters\r",
+							"  encodedSource = encodedSource.replace(/=+$/, '');\r",
+							"  // Replace characters according to base64url specifications\r",
+							"  encodedSource = encodedSource.replace(/\\+/g, '-');\r",
+							"  encodedSource = encodedSource.replace(/\\//g, '_');\r",
+							"  return encodedSource;\r",
+							"};\r",
+							"//To generate Header and Payload\r",
+							"var header = {\r",
+							"  \"alg\": \"HS256\",\r",
+							"  \"typ\": \"JWT\"\r",
+							"};\r",
+							"var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));\r",
+							"var encodedHeader = base64url(stringifiedHeader);\r",
+							"//Unix epoch time formula\r",
+							"var time = Math.floor(new Date().getTime()/1000.0);\r",
+							"var payloaddata = {\r",
+							"  \"iss\": pm.environment.get('clientid'),\r",
+							"  \"sub\": pm.environment.get('clientid'),\r",
+							"  \"aud\": pm.environment.get('usertoken'),\r",
+							"  \"iat\": time-50\r",
+							"};\r",
+							"console.log(time);\r",
+							"var stringifiedData = CryptoJS.enc.Utf8.parse(JSON.stringify(payloaddata));\r",
+							"var encodedPayloadData = base64url(stringifiedData);\r",
+							"var headerPayload = encodedHeader + \".\" + encodedPayloadData;\r",
+							"//Client secret ID - To generate JWS\r",
+							"var secretID = pm.environment.get('secret');\r",
+							"var signature = CryptoJS.HmacSHA256(headerPayload, secretID);\r",
+							"signature = base64url(signature);\r",
+							"var jws = headerPayload + \".\" + signature;\r",
+							"console.log(jws);\r",
+							"pm.environment.set(\"auth\", jws);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"]=responseCode.code===200;\r",
+							"var responseJSON;\r",
+							"responseJSON=JSON.parse(responseBody);\r",
+							"pm.environment.set(\"accesstoken\", responseJSON.AccessToken);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authentication",
+						"value": "{{auth}}",
+						"type": "text"
+					},
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://testoauth.expressauth.net/v2/",
+					"protocol": "https",
+					"host": [
+						"testoauth",
+						"expressauth",
+						"net"
+					],
+					"path": [
+						"v2",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"Status code is 200\"]=responseCode.code===200;\r",
+							"var responseJSON;\r",
+							"responseJSON=JSON.parse(responseBody);\r",
+							"pm.environment.set(\"BusinessId\", responseJSON.BusinessId);\r",
+							"pm.environment.set(\"SubmissionId\", responseJSON.SubmissionId);\r",
+							"pm.environment.set(\"RecordId\", responseJSON.Form1099BRecords.SuccessRecords[0].RecordId);\r",
+							"pm.environment.set(\"RecipientId\", responseJSON.Form1099BRecords.SuccessRecords[0].RecipientId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{accesstoken}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"SubmissionManifest\": {\r\n   \"SubmissionId\": null,\r\n   \"TaxYear\": \"2022\",\r\n   \"IsFederalFiling\": true,\r\n   \"IsStateFiling\": true,\r\n   \"IsPostal\": true,\r\n   \"IsOnlineAccess\": true,\r\n   \"IsScheduleFiling\": true,\r\n   \"ScheduleFiling\": {\r\n     \"EfileDate\": \"08/29/2023\"\r\n   }\r\n },\r\n \"ReturnHeader\": {\r\n   \"Business\": {\r\n     \"BusinessId\": null,\r\n     \"BusinessNm\": \"CALVANIK\",\r\n     \"PayerRef\": \"CA32E\",\r\n     \"TradeNm\": \"CALVANIK\",\r\n     \"IsEIN\": true,\r\n     \"EINorSSN\": \"22-9525362\",\r\n     \"Email\": \"John@gmail.com\",\r\n     \"ContactNm\": \"Vimek\",\r\n     \"Phone\": \"1234567890\",\r\n     \"PhoneExtn\": \"12345\",\r\n     \"Fax\": \"1234567890\",\r\n     \"BusinessType\": \"ESTE\",\r\n     \"SigningAuthority\": {\r\n       \"Name\": \"John\",\r\n       \"Phone\": \"1234567890\",\r\n       \"BusinessMemberType\": \"ADMINISTRATOR\"\r\n     },\r\n     \"KindOfEmployer\": \"FederalGovt\",\r\n     \"KindOfPayer\": \"REGULAR941\",\r\n     \"IsBusinessTerminated\": false,\r\n     \"IsForeign\": false,\r\n     \"USAddress\": {\r\n       \"Address1\": \"1751 Kinsey Rd\",\r\n       \"Address2\": \"Main St\",\r\n       \"City\": \"Dothan\",\r\n       \"State\": \"AL\",\r\n       \"ZipCd\": \"36303\"\r\n     },\r\n     \"ForeignAddress\": {\r\n       \"Address1\": null,\r\n       \"Address2\": null,\r\n       \"City\": null,\r\n       \"ProvinceOrStateNm\": null,\r\n       \"Country\": null,\r\n       \"PostalCd\": null\r\n     }\r\n   }\r\n },\r\n \"ReturnData\": [\r\n   {\r\n     \"RecordId\": null,\r\n     \"SequenceId\": \"1\",\r\n     \"Recipient\": {\r\n       \"RecipientId\": null,\r\n       \"TINType\": \"SSN\",\r\n       \"TIN\": \"229855924\",\r\n       \"FirstPayeeNm\": \"Steve\",\r\n       \"SecondPayeeNm\": \"Bridge\",\r\n       \"IsForeign\": false,\r\n       \"USAddress\": {\r\n         \"Address1\": \"1751 Kinsey Rd\",\r\n         \"Address2\": \"Main St\",\r\n         \"City\": \"Dothan\",\r\n         \"State\": \"AL\",\r\n         \"ZipCd\": \"36303\"\r\n       },\r\n       \"ForeignAddress\": {\r\n         \"Address1\": null,\r\n         \"Address2\": null,\r\n         \"City\": null,\r\n         \"ProvinceOrStateNm\": null,\r\n         \"Country\": null,\r\n         \"PostalCd\": null\r\n       },\r\n       \"Email\": \"John@gmail.com\",\r\n       \"Fax\": \"1234567890\",\r\n       \"Phone\": \"1234567890\"\r\n     },\r\n     \"BFormData\": {\r\n       \"B1aDescrOfProp\": \"share market\",\r\n       \"B1bDateAcquired\": \"10/01/2022\",\r\n       \"B1cDateSoldOrDisposed\": \"10/01/2022\",\r\n       \"B1dProceeds\": 40.55,\r\n       \"B1eCostOrOtherBasis\": 30.89,\r\n       \"B1fAccruedMktDisc\": 20.11,\r\n       \"B1gWashsaleLossDisallowed\": 4.25,\r\n       \"B2TypeOfGainLoss\": \"ordinary short term\",\r\n       \"B3IsProceedsFromCollectibles\": true,\r\n       \"B3IsProceedsFromQOF\": false,\r\n       \"B4FedTaxWH\": 33.89,\r\n       \"B5IsNonCoveredSecurityNotReported\": false,\r\n       \"B5IsNonCoveredSecurityReported\": false,\r\n       \"B6IsGrossProceeds\": true,\r\n       \"B6IsNetProceeds\": true,\r\n       \"B7IsLossNotAllowedbasedOn1d\": true,\r\n       \"B8PLRealizedOnClosedContract\": 0,\r\n       \"B9PLUnrealizedOnOpenContractPrevTy\": null,\r\n       \"B10UnrealizedPLOnOpenContractCurTy\": null,\r\n       \"B11AggPLOnContract\": 0,\r\n       \"B12IsBasisReportedToIRS\": false,\r\n       \"B13Bartering\": 43,\r\n       \"AccountNum\": \"20123130000009000001\",\r\n       \"CUSIPNum\": \"8988932143534\",\r\n       \"IsFATCA\": false,\r\n       \"Form8949Code\": \"X\",\r\n       \"Is2ndTINnot\": true,\r\n       \"States\": [\r\n         {\r\n           \"StateCd\": \"WV\",\r\n           \"StateIdNum\": \"99999999\",\r\n           \"StateWH\": 257.94\r\n         },\r\n         {\r\n           \"StateCd\": \"ID\",\r\n           \"StateIdNum\": \"999999999\",\r\n           \"StateWH\": 15\r\n         }\r\n       ]\r\n     }\r\n   }\r\n ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://testapi.taxbandits.com/v1.7.1/Form1099B/Create",
+					"protocol": "https",
+					"host": [
+						"testapi",
+						"taxbandits",
+						"com"
+					],
+					"path": [
+						"v1.7.1",
+						"Form1099B",
+						"Create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{accesstoken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://testapi.taxbandits.com/v1.7.1/Form1099B/Get?SubmissionId={{SubmissionId}}",
+					"protocol": "https",
+					"host": [
+						"testapi",
+						"taxbandits",
+						"com"
+					],
+					"path": [
+						"v1.7.1",
+						"Form1099B",
+						"Get"
+					],
+					"query": [
+						{
+							"key": "SubmissionId",
+							"value": "{{SubmissionId}}"
+						},
+						{
+							"key": "RecordId",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Copy",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{accesstoken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://testapi.taxbandits.com/v1.7.1/Form1099B/Get?SubmissionId={{SubmissionId}}",
+					"protocol": "https",
+					"host": [
+						"testapi",
+						"taxbandits",
+						"com"
+					],
+					"path": [
+						"v1.7.1",
+						"Form1099B",
+						"Get"
+					],
+					"query": [
+						{
+							"key": "SubmissionId",
+							"value": "{{SubmissionId}}"
+						},
+						{
+							"key": "RecordId",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
