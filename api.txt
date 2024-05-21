@@ -1,0 +1,5 @@
+baseurl: https://oauth.spansprint.com/v2/tbsauth
+host: https://tbs-api.spansprint.com
+clientid: 8723dcd71e10216f
+usertoken: a84eb69f388f416e9d48ded3ce2b60b2
+secret: czbDNKz9PpZADYq7tQuYag
